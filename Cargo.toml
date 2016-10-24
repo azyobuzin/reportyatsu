@@ -1,0 +1,9 @@
+[package]
+name = "md2html"
+version = "0.1.0"
+authors = ["azyobuzin <azyobuzin@users.sourceforge.jp>"]
+publish = false
+
+[dependencies]
+html5ever = "0.5.4"
+string_cache = "0.2.29"
