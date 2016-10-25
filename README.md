@@ -6,7 +6,7 @@ Markdown からﾌｧｯｷﾝ Moodle 向け HTML を生成するやつ。
 * 実行時に必要: Pandoc
 
 # ダウンロード
-[いちおうある](https://github.com/azyobuzin/reportyatsu/releases/tag/v0.1.0)
+[いちおうある(master)](https://github.com/azyobuzin/reportyatsu/releases/tag/v0.1.0)
 
 # 使い方
 ```

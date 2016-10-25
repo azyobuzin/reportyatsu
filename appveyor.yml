@@ -1,13 +1,13 @@
 version: 1.0.{build}
 
 install:
-- ps: Invoke-WebRequest https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe -OutFile rustup-init.exe
-- cmd: rustup-init.exe -y
-- cmd: del rustup-init.exe
-- cmd: set Path=%Path%;C:\Users\appveyor\.cargo\bin
+- appveyor DownloadFile https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe
+- rustup-init.exe -y
+- del rustup-init.exe
+- set Path=%Path%;C:\Users\appveyor\.cargo\bin
 
 build_script:
-- cmd: cargo build --release
+- cargo build --release
 
 artifacts:
 - path: target\release\md2html.exe

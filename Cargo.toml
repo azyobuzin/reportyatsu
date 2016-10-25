@@ -1,9 +1,12 @@
 [package]
-name = "md2html"
-version = "0.1.0"
+name = "reportyatsu"
+version = "0.2.0"
 authors = ["azyobuzin <azyobuzin@users.sourceforge.jp>"]
 publish = false
 
 [dependencies]
+cssparser = "0.7.0"
 html5ever = "0.5.4"
+kuchiki = "0.3.4"
+selectors = "0.12"
 string_cache = "0.2.29"
