@@ -10,4 +10,4 @@ build_script:
 - cargo build --release
 
 artifacts:
-- path: target\release\md2html.exe
+- path: target\release\reportyatsu.exe

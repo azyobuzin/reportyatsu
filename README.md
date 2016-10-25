@@ -1,5 +1,8 @@
-# レポートHTML錬成機 md2html
+# レポートHTML錬成機
 Markdown からﾌｧｯｷﾝ Moodle 向け HTML を生成するやつ。
+
+# dev ブランチ
+外部から CSS を指定できるようになるぞ。
 
 # 必要環境
 * コンパイルするなら: Rust, Cargo
@@ -10,7 +13,7 @@ Markdown からﾌｧｯｷﾝ Moodle 向け HTML を生成するやつ。
 
 # 使い方
 ```
-md2html hoge.md
+reportyatsu hoge.md
 ```
 
 で hoge.html が生成されます。
