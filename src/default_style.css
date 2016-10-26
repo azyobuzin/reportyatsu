@@ -16,18 +16,6 @@ img {
     max-width: 100%;
 }
 
-/*
-code {
-    white-space: pre;
-}
-
-pre {
-    background-color: #f8f8f8;
-    padding: 8px;
-    overflow-x: auto;
-}
-*/
-
 table:not(.sourceCode) {
     border: 1pt solid #ddd;
     border-spacing: 0;

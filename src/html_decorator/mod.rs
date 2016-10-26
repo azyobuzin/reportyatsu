@@ -44,7 +44,9 @@ impl HtmlDecorator {
             options: options,
         };
 
-        core.apply_style();
+        core.apply_stylesheets();
+        core.table_caption();
+        core.source_code_caption();
     }
 }
 
@@ -54,8 +56,8 @@ struct HtmlDecoratorCore<'a> {
 }
 
 impl<'a> HtmlDecoratorCore<'a> {
-    /// タグ名またはclassをトリガーにスタイルを適用
-    fn apply_style(&self) {
+    /// style タグとユーザー指定スタイルシートから style 属性を作成
+    fn apply_stylesheets(&self) {
         fn apply(root: &kuchiki::NodeRef, stylesheet: &str) {
             stylesheets::each_rule(stylesheet, |r| match r {
                 Ok((selector, decls)) =>
@@ -100,6 +102,39 @@ impl<'a> HtmlDecoratorCore<'a> {
         // ユーザー指定スタイル
         if let Some(ref s) = self.options.stylesheet {
             apply(self.root, &s)
+        }
+    }
+
+    /// caption タグを p タグにする（デザインの統一）
+    fn table_caption(&self) {
+        for caption in self.root.select("table > caption").unwrap() {
+            let caption = caption.as_node();
+            if let Some(table) = caption.parent() {
+                let p = kuchiki::NodeRef::new_element(
+                    qualname!("", "p"),
+                    Some((qualname!("", "style"), "text-align: center;".to_owned()))
+                );
+                for x in caption.children() {
+                    p.append(x);
+                }
+                caption.detach();
+                table.insert_before(p);
+            }
+        }
+    }
+
+    /// ソースコードの title 属性を p タグにする
+    fn source_code_caption(&self) {
+        for source_code_box in self.root.select("div.sourceCode, pre").unwrap() {
+            let title = source_code_box.attributes.borrow_mut().remove(atom!("title"));
+            if let Some(title) = title {
+                let p = kuchiki::NodeRef::new_element(
+                    qualname!("", "p"),
+                    Some((qualname!("", "style"), "text-align: center;".to_owned()))
+                );
+                p.append(kuchiki::NodeRef::new_text(title));
+                source_code_box.as_node().insert_before(p);
+            }
         }
     }
 }
