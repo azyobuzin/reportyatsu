@@ -47,6 +47,7 @@ impl HtmlDecorator {
         core.apply_stylesheets();
         core.table_caption();
         core.source_code_caption();
+        core.remove_class_and_id();
     }
 }
 
@@ -135,6 +136,15 @@ impl<'a> HtmlDecoratorCore<'a> {
                 p.append(kuchiki::NodeRef::new_text(title));
                 source_code_box.as_node().insert_before(p);
             }
+        }
+    }
+
+    /// class と id 消し去るマン
+    fn remove_class_and_id(&self) {
+        for elm in kuchiki::iter::Elements(self.root.descendants()) {
+            let mut attrs = elm.attributes.borrow_mut();
+            attrs.remove(atom!("class"));
+            attrs.remove(atom!("id"));
         }
     }
 }

@@ -5,6 +5,7 @@ authors = ["azyobuzin <azyobuzin@users.sourceforge.jp>"]
 publish = false
 
 [dependencies]
+clap = "2.16.2"
 cssparser = "0.7.0"
 html5ever = "0.5.4"
 kuchiki = "0.3.4"
