@@ -70,10 +70,12 @@
 
 # cssparser
 Author: Simon Sapin <simon.sapin@exyr.org>
+
 License: [MPL-2.0](https://github.com/servo/rust-cssparser/blob/v0.7.0/LICENSE)
 
 # selectors
 Author: Simon Sapin <simon.sapin@exyr.org>, Alan Jeffrey <ajeffrey@mozilla.com>
+
 License: [MPL-2.0](https://www.mozilla.org/en-US/MPL/2.0/)
 
 # その他のソフトウェア
