@@ -44,3 +44,11 @@ blockquote {
     text-align: center;
     margin-top: 1em;
 }
+
+.lineNumbers {
+    width: 2em;
+}
+
+.lineHighlight {
+    background-color: darkred;
+}

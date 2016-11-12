@@ -3,6 +3,7 @@ mod stylesheets;
 use std::borrow::Cow;
 use std::io;
 use std::io::prelude::*;
+use html5ever::serialize;
 use html5ever::tendril;
 use kuchiki;
 use kuchiki::traits::*;
@@ -32,10 +33,16 @@ impl HtmlDecorator {
     }
 
     pub fn serialize<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        self.root.descendants()
-            .filter(|x| x.as_element().map(|y| &y.name.local) == Some(&atom!("body")))
-            .nth(0).unwrap()
-            .serialize(writer)
+        serialize::serialize(
+            writer,
+            &self.root.descendants()
+                .filter(|x| x.as_element().map(|y| &y.name.local) == Some(&local_name!("body")))
+                .nth(0).unwrap(),
+            serialize::SerializeOpts {
+                scripting_enabled: false,
+                traversal_scope: serialize::TraversalScope::ChildrenOnly,
+            }
+        )
     }
 
     pub fn decorate_html(&self, options: &HtmlDecoratorOptions) {
@@ -44,6 +51,8 @@ impl HtmlDecorator {
             options: options,
         };
 
+        // core.line_highlight();
+        // moodle に pre 内の div の style 消されて泣いた
         core.apply_stylesheets();
         core.table_caption();
         core.source_code_caption();
@@ -57,6 +66,55 @@ struct HtmlDecoratorCore<'a> {
 }
 
 impl<'a> HtmlDecoratorCore<'a> {
+    /// 指定された行数にスタイル適用（はつらかったので行数表示に）
+    #[allow(dead_code)]
+    fn line_highlight(&self) {
+        let targets = self.root.descendants()
+            .filter_map(|node_ref|
+                node_ref.as_element()
+                    .and_then(|elm| elm.attributes.borrow_mut().remove("data-highlight"))
+                    .map(|s| (node_ref, s))
+            );
+
+        for (node_ref, s) in targets {
+            let mut lines = ::std::collections::BTreeSet::new();
+            for x in s.split(',').map(|x| x.trim()).filter(|x| !x.is_empty()) {
+                match x.find('-') {
+                    Some(i) => {
+                        let s: usize = x[..i].trim().parse().expect("invalid range");
+                        let e: usize = x[i + 1..].trim().parse().expect("invalid range");
+                        for y in s..e+1 { lines.insert(y); }
+                    }
+                    None => { lines.insert(x.parse().expect("invalid range")); }
+                }
+            }
+
+            for pre in node_ref.select(".lineNumbers pre").unwrap() {
+                let pre = pre.as_node();
+                let line_count = pre.text_contents().lines().count();
+
+                // 元のやつは全部削除
+                for child in pre.children() {
+                    child.detach();
+                }
+
+                for i in 1..line_count+1 {
+                    let txt = kuchiki::NodeRef::new_text(format!("{}\n", i));
+                    if lines.contains(&i) {
+                        let elm = kuchiki::NodeRef::new_element(
+                            qualname!("", "div"),
+                            Some((qualname!("", "class"), "lineHighlight".to_owned()))
+                        );
+                        elm.append(txt);
+                        pre.append(elm);
+                    } else {
+                        pre.append(txt);
+                    }
+                }
+            }
+        }
+    }
+
     /// style タグとユーザー指定スタイルシートから style 属性を作成
     fn apply_stylesheets(&self) {
         fn apply(root: &kuchiki::NodeRef, stylesheet: &str) {
@@ -64,14 +122,14 @@ impl<'a> HtmlDecoratorCore<'a> {
                 Ok((selector, decls)) =>
                     for elm in selector.filter(kuchiki::iter::Elements(root.descendants())) {
                         let mut attrs = elm.attributes.borrow_mut();
-                        if match attrs.get_mut(atom!("style")) {
+                        if match attrs.get_mut(local_name!("style")) {
                             Some(v) => {
                                 v.push_str(&decls);
                                 false
                             },
                             None => true
                         } {
-                            attrs.insert(atom!("style"), decls.clone());
+                            attrs.insert(local_name!("style"), decls.clone());
                         }
                     },
                 Err(x) => panic!("Invalid stylesheet: {:?}", x)
@@ -81,7 +139,7 @@ impl<'a> HtmlDecoratorCore<'a> {
         // style タグ
         if self.options.apply_style_from_style_tags {
             let style_tags = self.root.descendants()
-                .filter(|node_ref| node_ref.as_element().map(|elm| &elm.name.local) == Some(&atom!("style")));
+                .filter(|node_ref| node_ref.as_element().map(|elm| &elm.name.local) == Some(&local_name!("style")));
 
             for node_ref in style_tags {
                 let mut children = node_ref.children();
@@ -127,7 +185,7 @@ impl<'a> HtmlDecoratorCore<'a> {
     /// ソースコードの title 属性を p タグにする
     fn source_code_caption(&self) {
         for source_code_box in self.root.select("div.sourceCode, pre").unwrap() {
-            let title = source_code_box.attributes.borrow_mut().remove(atom!("title"));
+            let title = source_code_box.attributes.borrow_mut().remove(local_name!("title"));
             if let Some(title) = title {
                 let p = kuchiki::NodeRef::new_element(
                     qualname!("", "p"),
@@ -143,8 +201,8 @@ impl<'a> HtmlDecoratorCore<'a> {
     fn remove_class_and_id(&self) {
         for elm in kuchiki::iter::Elements(self.root.descendants()) {
             let mut attrs = elm.attributes.borrow_mut();
-            attrs.remove(atom!("class"));
-            attrs.remove(atom!("id"));
+            attrs.remove(local_name!("class"));
+            attrs.remove(local_name!("id"));
         }
     }
 }
